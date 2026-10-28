@@ -11,6 +11,7 @@ changed meaning.
 | `03_align_models.py` | Aligns the period models so they can be compared | (nothing, unless you rename models) |
 | `04_explore_change.py` | Traces one word across the periods | `WORD` |
 | `05_gender_and_a_word.py` | Which words near a target word lean toward women, and which toward men (after Schmidt) | `MODEL_NAME`, `TARGET`, `WOMEN_WORDS`, `MEN_WORDS` |
+| `06_gender_over_time.py` | Where a few words fall between the women and men words in each period, on one ruler per period | `WORDS`, `WOMEN_WORDS`, `MEN_WORDS`, `EXTRA_RUNS` |
 
 ---
 
@@ -111,6 +112,10 @@ Each model is saved in `models/`. Training takes a minute or two per period.
 **4. Trace a word over time:** `python 04_explore_change.py`
 
 **5. Gender and a word:** `python 05_gender_and_a_word.py` (uses a model from step 1; no alignment needed)
+
+**6. Gender over time:** `python 06_gender_over_time.py` (uses the models from step 1; no alignment
+needed, because each period's women–men ruler is built inside its own model). Set `EXTRA_RUNS = 3`
+to retrain each period a few times and see how much the positions move from run to run.
 
 Plots are saved in `plots/` and open automatically.
 
