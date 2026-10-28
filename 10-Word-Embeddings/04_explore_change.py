@@ -22,6 +22,7 @@ import matplotlib
 matplotlib.use("Agg")                 # draw to a file, not a window
 import matplotlib.pyplot as plt
 import numpy as np
+from adjustText import adjust_text
 from gensim.models import KeyedVectors
 from sklearn.decomposition import PCA
 
@@ -81,15 +82,18 @@ def plot_path(models, word):
     points = PCA(n_components=2).fit_transform(np.array(vectors))
 
     fig, ax = plt.subplots(figsize=(12, 9))
+    texts = []
+    neighbor_points = points[len(names):]
+    ax.scatter(neighbor_points[:, 0], neighbor_points[:, 1], s=8, color="#c5cad3")
     for (x, y), label, kind in zip(points, labels, kinds):
         if kind == "neighbor":
-            ax.annotate(label, (x, y), fontsize=12, color="#8a93a6", ha="center", va="center")
+            texts.append(ax.text(x, y, label, fontsize=12, color="#8a93a6"))
     word_points = points[:len(names)]
     for i, (name, (x, y)) in enumerate(zip(names, word_points)):
         color = COLORS[i % len(COLORS)]
         ax.scatter(x, y, s=60, color=color, zorder=3)
-        ax.annotate(f"{word} ({name})", (x, y), fontsize=14, fontweight="bold", color=color,
-                    xytext=(6, 6), textcoords="offset points", zorder=4)
+        texts.append(ax.text(x, y, f"{word} ({name})", fontsize=14, fontweight="bold",
+                             color=color, zorder=4))
         if i:
             ax.annotate("", xy=(x, y), xytext=tuple(word_points[i - 1]),
                         arrowprops=dict(arrowstyle="->", color="#4a5568", lw=2), zorder=2)
@@ -100,6 +104,10 @@ def plot_path(models, word):
     ax.set_title(f"How '{word}' moved, {names[0]} to {names[-1]}")
     for side in ("top", "right", "bottom", "left"):
         ax.spines[side].set_visible(False)
+
+    # Nudge the labels apart so they don't overlap; a thin line joins a moved label to its dot
+    adjust_text(texts, x=points[:, 0], y=points[:, 1], ax=ax,
+                arrowprops=dict(arrowstyle="-", color="#8a93a6", lw=0.6))
 
     PLOT_FOLDER.mkdir(exist_ok=True)
     path = PLOT_FOLDER / f"change_{word}.png"

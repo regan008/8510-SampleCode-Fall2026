@@ -27,6 +27,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")                 # draw to a file, not a window
 import matplotlib.pyplot as plt
+from adjustText import adjust_text
 from gensim.models import Word2Vec
 from sklearn.decomposition import PCA
 
@@ -88,16 +89,19 @@ def plot_positioning(model, word, count):
 
     fig, ax = plt.subplots(figsize=(13, 9))
     ax.scatter(points[1:, 0], points[1:, 1], s=8, color="#8a93a6")
-    for (x, y), neighbor in zip(points[1:], words[1:]):
-        ax.annotate(neighbor, (x, y), fontsize=11, xytext=(3, 3), textcoords="offset points")
     ax.scatter(points[0, 0], points[0, 1], s=60, color="#c0392b", zorder=3)   # the word itself
-    ax.annotate(word, points[0], fontsize=15, fontweight="bold", color="#c0392b",
-                xytext=(5, 5), textcoords="offset points", zorder=4)
+    texts = [ax.text(x, y, neighbor, fontsize=11) for (x, y), neighbor in zip(points[1:], words[1:])]
+    texts.append(ax.text(points[0, 0], points[0, 1], word, fontsize=15, fontweight="bold",
+                         color="#c0392b", zorder=4))
     ax.set_xlabel("PC1")
     ax.set_ylabel("PC2")
     ax.set_title(f"'{word}' and its {count} nearest neighbors, "
                  f"flattened to 2 dimensions ({MODEL_NAME})")
     ax.spines[["top", "right"]].set_visible(False)
+
+    # Nudge the labels apart so they don't overlap; a thin line joins a moved label to its dot
+    adjust_text(texts, x=points[:, 0], y=points[:, 1], ax=ax,
+                arrowprops=dict(arrowstyle="-", color="#8a93a6", lw=0.6))
 
     PLOT_FOLDER.mkdir(exist_ok=True)
     path = PLOT_FOLDER / f"neighbors_{word}_{MODEL_NAME}.png"

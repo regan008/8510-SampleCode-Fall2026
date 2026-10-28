@@ -27,6 +27,7 @@ import matplotlib
 matplotlib.use("Agg")                 # draw to a file, not a window
 import matplotlib.pyplot as plt
 import numpy as np
+from adjustText import adjust_text
 from gensim.models import Word2Vec
 
 SCRIPT_DIR = Path(__file__).parent
@@ -101,17 +102,19 @@ def main():
     # Plot: gender score across, closeness to TARGET up the side
     fig, ax = plt.subplots(figsize=(13, 9))
     ax.scatter(gender[near], closeness[near], s=10, color="#c5cad3")
-    for i in lean_women[:PLOT_LABELS]:
-        ax.annotate(words[i], (gender[i], closeness[i]), fontsize=12, color="#8e44ad",
-                    xytext=(3, 3), textcoords="offset points")
-    for i in lean_men[:PLOT_LABELS]:
-        ax.annotate(words[i], (gender[i], closeness[i]), fontsize=12, color="#2a6f97",
-                    xytext=(3, 3), textcoords="offset points")
+    texts = [ax.text(gender[i], closeness[i], words[i], fontsize=12, color="#8e44ad")
+             for i in lean_women[:PLOT_LABELS]]
+    texts += [ax.text(gender[i], closeness[i], words[i], fontsize=12, color="#2a6f97")
+              for i in lean_men[:PLOT_LABELS]]
     ax.axvline(0, color="#8a93a6", lw=1, ls="--")
     ax.set_xlabel("← leans toward men words          leans toward women words →", fontsize=13)
     ax.set_ylabel(f"similarity to '{TARGET}'", fontsize=13)
     ax.set_title(f"Words closest to '{TARGET}', by gender lean ({MODEL_NAME})", fontsize=15)
     ax.spines[["top", "right"]].set_visible(False)
+
+    # Nudge the labels apart so they don't overlap; a thin line joins a moved label to its dot
+    adjust_text(texts, x=gender[near], y=closeness[near], ax=ax,
+                arrowprops=dict(arrowstyle="-", color="#8a93a6", lw=0.6))
 
     PLOT_FOLDER.mkdir(exist_ok=True)
     plot_path = PLOT_FOLDER / f"gender_{TARGET}_{MODEL_NAME}.png"
