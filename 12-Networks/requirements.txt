@@ -1,0 +1,5 @@
+# For building and drawing network graphs
+pandas
+networkx
+scipy      # networkx uses it to lay out graphs with more than 500 nodes
+pyvis
